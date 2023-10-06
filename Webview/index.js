@@ -9,11 +9,17 @@ const prefixElements = document.querySelectorAll('.prefix');
 const suffixElements = document.querySelectorAll('.suffix');
 
 function el(selector) {
-	return document.querySelector(selector);
+	let qSelector = document.querySelector(selector);
+	return qSelector;
 }
 
 function setClockElOn(selector) {
-	el(selector).classList.add('on');
+	let qSelector = el(selector);
+	if (qSelector === null) {
+		console.log('Element not found: ' + selector);
+	} else {
+		el(selector).classList.add('on');
+	}
 }
 
 function setPrefixElOn(number) {
@@ -61,19 +67,77 @@ function clearClock() {
 function updateClock() {
 	const date = new Date();
 	let hour = date.getHours();
-	const minutes = date.getMinutes();
+	const minutes= date.getMinutes();
 
+	document.getElementById("currenthour").innerHTML = ""+hour +":"+ minutes
 	// Convert 24 hour time to 12 hour
-	if (hour >= 13) {
-		hour -= 12;
-	}
-	if (parseInt(hour, 10) === 0) {
-		hour = 12;
-	}
-
-	// 'Turn off' all clock elements
 	clearClock();
+	setClockElOn(".il");
+	setClockElOn(".est");
+	if(hour === 0){
+		setClockElOn(".minuit");
+	} else if(hour === 12){
+		setClockElOn(".midi");
+	} else {
+		if(hour === 1){
+			setClockElOn(".heure")
+		}else{
+			setClockElOn(".heures")
+		}
+		if (hour <= 16) {
+			setClockElOn(".h"+["une", "deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze", "", "treize", "quatorze", "quinze", "seize"][hour-1]);
+		} else if(17 <= hour && hour < 20){
+			setClockElOn(".hdix");
+			setClockElOn(".h"+["sept","huit","neuf"][hour-17]);
+		} else if(20 === hour){
+			setClockElOn(".hvingt");
+		} else if(21 <= hour && hour < 24){
+			setClockElOn(".hvingt");
+			if (hour === 21) {
+				setClockElOn(".et1");
+			}
+			setClockElOn(".h"+["une", "deux","trois"][hour-21]);
+		}
+	}
 
+	if (minutes === 0) {
+		setClockElOn(".pile");
+	} else if (minutes === 15 || minutes === 30) {
+		setClockElOn(".et2");
+		if (minutes === 15) {
+			setClockElOn(".quart");
+		} else {
+			if (hour === 12 || hour === 0) {
+				setClockElOn(".demi");
+			} else {
+				setClockElOn(".demie");
+			}
+		}
+	} else{
+		let dizaine = Math.floor(minutes/10);
+		let unite = minutes%10;
+		if (2 <= dizaine) {
+			setClockElOn("."+["vingt", "trente", "quarante", "cinquante"][dizaine-2]);
+			if (unite !== 0) {
+				setClockElOn("."+["un", "deux","trois","quatre","cinq","six","sept","huit","neuf"][unite-1]);
+				if(unite === 1){
+					setClockElOn(".et3");
+				}
+			}
+		} else if (dizaine === 1) {
+			if (unite === 0 || unite >= 7) {
+				setClockElOn(".dix");
+				setClockElOn("."+["sept","huit","neuf"][unite-7])
+			} else if (1<= unite && unite <= 6 && unite !== 5) {
+				setClockElOn("."+["onze", "douze","treize","quatorze","" , "seize"][unite-1]);
+			}
+		} else if (dizaine === 0) {
+			setClockElOn("."+["une", "deux","trois","quatre","cinq","six","sept","huit","neuf"][unite-1]);
+		}
+
+	}
+
+	/*
 	// One minute past [hour]
 	if (parseInt(minutes, 10) === 1) {
 		setClockElOn('.one');
@@ -166,13 +230,43 @@ function updateClock() {
 			setSuffixElOn(hour + 1);
 			return;
 	}
-
+	*/
 	// [hour] [minutes]
-	setPrefixElOn(hour);
-	setMinutes(minutes);
+	// setPrefixElOn(hour);
+	// setMinutes(minutes);
+}
+
+function init_empty_glyph(){
+	let glyphs = document.querySelectorAll("glyph");
+	glyphs.forEach(glyph => {
+		if(glyph.innerHTML === ""){
+			glyph.innerHTML = ""+ String.fromCharCode(97+Math.floor(Math.random()*26));;
+		}
+	});
 }
 
 /** Tick / init
 ----------------------------------------------------------------------------- */
+init_empty_glyph();
 setInterval(updateClock, 1000);
 updateClock();
+
+document.addEventListener(
+	"keydown",
+	function (e) {
+		if (e.keyCode === 13) {
+			toggleFullScreen();
+		}
+	},
+	false,
+);
+
+function toggleFullScreen() {
+	if (!document.fullscreenElement) {
+		document.documentElement.requestFullscreen();
+	} else {
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		}
+	}
+}
